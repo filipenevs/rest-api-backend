@@ -1,0 +1,9 @@
+{
+  "files.exclude": {
+    // these files do not appear in the vscode interface
+    "node_modules": true,
+    ".gitignore": true,
+    "package.json": true,
+    "package-lock.json": true
+  }
+}
