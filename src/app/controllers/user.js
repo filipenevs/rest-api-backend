@@ -68,9 +68,9 @@ router.post('/register', async (req, res) => {
     const user = await User.create(req.body);
     user.password = undefined;
     res.status(201).send({ user, token: generateToken({ id: user.id }) });
-  } catch (err) {
+  } catch (error) {
     res.status(500).send({ error: 'Registration failed' });
-    console.log(err);
+    console.log(error);
   }
 });
 
@@ -100,14 +100,18 @@ router.delete('/delete/:id', async (req, res) => {
     if (req.userId !== _id) {
       const deleteUser = await User.findOne({ _id });
 
+      if (!deleteUser)
+        return res.status(400).send({ error: 'nonexistent user' });
+
       if (req.userAdm <= deleteUser.admin)
         return res.status(403).send({ error: 'unauthorized' });
     }
 
-    User.deleteOne({ _id: _id });
-    res.status(204).send({ status: `OK` });
+    await User.deleteOne({ _id });
+    return res.status(204);
   } catch (error) {
     res.status(500).send({ error: 'delete failed' });
+    console.log(error);
   }
 });
 
