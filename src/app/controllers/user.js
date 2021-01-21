@@ -104,14 +104,29 @@ router.delete('/delete/:id', async (req, res) => {
         return res.status(400).send({ error: 'nonexistent user' });
 
       if (req.userAdm <= deleteUser.admin)
-        return res.status(403).send({ error: 'unauthorized' });
+        return res.status(403).send({ error: 'permission denied' });
     }
 
     await User.deleteOne({ _id });
-    return res.status(204);
+    return res.status(204).send();
   } catch (error) {
     res.status(500).send({ error: 'delete failed' });
-    console.log(error);
+  }
+});
+
+router.put('/update/:id', async (req, res) => {
+  const _id = req.params.id;
+  try {
+    if (req.userId !== _id)
+      return res.status(403).send({ error: 'permission denied' });
+
+    const password = await bcrypt.hash(req.body.password, 10);
+
+    await User.updateOne({ _id }, { password });
+
+    return res.status(204).send();
+  } catch (error) {
+    res.status(500).send({ error: 'update failed' });
   }
 });
 
