@@ -54,6 +54,9 @@ module.exports = (req, res, next) => {
 
     const userQuery = await User.findOne({ _id: decoded.id });
 
+    /* EN: Passing the user id and permissions to the request
+     * PT-BR: Repassando o id do usuário e suas permissões para a requisição
+     */
     req.userId = decoded.id;
     req.userAdm = userQuery.admin;
 

@@ -92,17 +92,29 @@ router.post('/authenticate', async (req, res) => {
   res.send({ user, token: generateToken({ id: user.id }) });
 });
 
+/* EN: Functions after middleware require authentication
+ * PT-BR: Funções depois do middleware requerem autenticação
+ */
 router.use(authMiddleware);
 
+/* EN: Function that excludes user, taking '_id' as a parameter
+ * PT-BR: Função de excluir usuário, recebendo o '_id' como parâmetro
+ */
 router.delete('/delete/:id', async (req, res) => {
   const _id = req.params.id;
   try {
+    /* EN: If the request comes from the user it is accepted
+     * PT-BR: Se a requisição vier do próprio usuário ela é aceita
+     */
     if (req.userId !== _id) {
       const deleteUser = await User.findOne({ _id });
 
       if (!deleteUser)
         return res.status(400).send({ error: 'nonexistent user' });
 
+      /* EN: If it is another user who requested it, they must have higher permissions
+       * PT-BR: Se for outro usuário que tenha solicitado, ele deve ter permissões superiores
+       */
       if (req.userAdm <= deleteUser.admin)
         return res.status(403).send({ error: 'permission denied' });
     }
@@ -114,20 +126,28 @@ router.delete('/delete/:id', async (req, res) => {
   }
 });
 
-router.put('/update/:id', async (req, res) => {
-  const _id = req.params.id;
+/* EN: Function to update name or password, the id is received by the request body
+ * PT-BR: Função para atualizar o nome e senha, o id é recebido pelo corpo da requisição
+ */
+router.put('/update', async (req, res) => {
+  const _id = req.userId;
   try {
-    if (req.userId !== _id)
-      return res.status(403).send({ error: 'permission denied' });
+    /* EN: Both data are updated with the same function, it will only be updated if the data is in the request body
+     * PT-BR: Os dois dados são atualizados com a mesma função, só será atualizado se o dado estiver no corpo da requisição
+     */
+    const updates = {};
+    if (req.body.name) updates.name = req.body.name;
+    if (req.body.password)
+      updates.password = await bcrypt.hash(req.body.password, 10);
 
-    const password = await bcrypt.hash(req.body.password, 10);
-
-    await User.updateOne({ _id }, { password });
-
+    await User.updateOne({ _id }, updates);
     return res.status(204).send();
   } catch (error) {
     res.status(500).send({ error: 'update failed' });
   }
 });
 
+/* EN: Exporting routes in '/user' path
+ * PT-BR: Exportando rotas no caminho '/user'
+ */
 module.exports = (app) => app.use('/user', router);
