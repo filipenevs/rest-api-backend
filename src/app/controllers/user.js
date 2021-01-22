@@ -39,7 +39,7 @@ router.get('/listall', async (req, res) => {
 });
 //===================================
 
-router.post('/register', async (req, res) => {
+router.post('/', async (req, res) => {
   /* EN: Destructuring the request and placing the email in a constant
    * PT-BR: Desestruturando a requisição e guardando o email numa constante
    */
@@ -73,7 +73,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/authenticate', async (req, res) => {
+router.post('/auth', async (req, res) => {
   /* EN: Destructuring the request and placing the email and password in constants
    * PT-BR: Desestruturando a requisição e guardando o email e a senha em constantes
    */
@@ -102,7 +102,7 @@ router.use(authMiddleware);
 /* EN: Function that excludes user, taking '_id' as a parameter
  * PT-BR: Função de excluir usuário, recebendo o '_id' como parâmetro
  */
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   const _id = req.params.id;
   try {
     /* EN: If the request comes from the user it is accepted
@@ -131,7 +131,7 @@ router.delete('/delete/:id', async (req, res) => {
 /* EN: Function to update name or password, the id is received by the request body
  * PT-BR: Função para atualizar o nome e senha, o id é recebido pelo corpo da requisição
  */
-router.put('/update', async (req, res) => {
+router.put('/', async (req, res) => {
   const _id = req.userId;
   try {
     /* EN: Both data are updated with the same function, it will only be updated if the data is in the request body

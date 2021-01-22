@@ -30,14 +30,13 @@ router.get('/listall', async (req, res) => {
  */
 router.use(authMiddleware);
 
-router.post('/add', async (req, res) => {
+router.post('/', async (req, res) => {
   const { userId, userName, body } = req;
   try {
     body.path = body.title.split(' ').join('-');
-    /* EN: If there is a similar email registered it is not possible to proceed
-     * PT-BR: Se existir algum email semelhante cadastrado, não é possível prosseguir
+    /* EN: If there is a similar title/path registered it is not possible to proceed
+     * PT-BR: Se existir algum title/path semelhante cadastrado, não é possível prosseguir
      */
-
     if (await Publi.findOne({ 'author.id': userId, path: body.path }))
       return res
         .status(400)
@@ -50,6 +49,26 @@ router.post('/add', async (req, res) => {
     res.status(201).send({ publi });
   } catch (error) {
     res.status(500).send({ error: 'Add failed' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  const _id = req.params.id;
+  try {
+    const deletePubli = await Publi.findOne({ _id });
+
+    if (!deletePubli)
+      return res.status(400).send({ error: 'nonexistent publication' });
+
+    if (deletePubli.author.id !== req.userId) {
+      if (req.userAdm == 0)
+        return res.status(403).send({ error: 'permission denied' });
+    }
+
+    await Publi.deleteOne({ _id });
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).send({ error: 'delete failed' });
   }
 });
 
