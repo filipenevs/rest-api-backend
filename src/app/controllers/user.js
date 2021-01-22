@@ -16,6 +16,7 @@ require('dotenv/config');
  * PT-BR: Importando modelos e middlewares
  */
 const User = require('../models/User');
+const Publi = require('../models/Publi');
 const authMiddleware = require('../middlewares/auth');
 
 /* EN: Function that generates a JWT, receives the user id with parameter
@@ -122,6 +123,11 @@ router.delete('/:id', async (req, res) => {
     }
 
     await User.deleteOne({ _id });
+
+    /* EN: Deleting publications when the user is deleted
+     * PT-BR: Deletando as publicações quando o usuário for deletado
+     */
+    await Publi.deleteMany({ 'author.id': _id });
     res.status(204).send();
   } catch (error) {
     res.status(500).send({ error: 'delete failed' });

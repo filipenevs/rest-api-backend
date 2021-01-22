@@ -25,6 +25,21 @@ router.get('/listall', async (req, res) => {
 });
 //===================================
 
+router.get('/:path', async (req, res) => {
+  const path = req.params.path;
+  try {
+    const publi = await Publi.findOne({ path });
+
+    if (!publi)
+      return res.status(404).send({ error: 'nonexistent publication' });
+
+    res.status(200).send({ publi });
+  } catch (error) {
+    res.status(500).send({ error: 'Get failed' });
+    console.log(error);
+  }
+});
+
 /* EN: Functions after middleware require authentication
  * PT-BR: Funções depois do middleware requerem autenticação
  */
@@ -33,7 +48,7 @@ router.use(authMiddleware);
 router.post('/', async (req, res) => {
   const { userId, userName, body } = req;
   try {
-    body.path = body.title.split(' ').join('-');
+    body.path = userId.slice(-4) + '-' + body.title.split(' ').join('-');
     /* EN: If there is a similar title/path registered it is not possible to proceed
      * PT-BR: Se existir algum title/path semelhante cadastrado, não é possível prosseguir
      */
