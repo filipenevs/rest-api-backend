@@ -70,7 +70,6 @@ router.post('/register', async (req, res) => {
     res.status(201).send({ user, token: generateToken({ id: user.id }) });
   } catch (error) {
     res.status(500).send({ error: 'Registration failed' });
-    console.log(error);
   }
 });
 
@@ -79,17 +78,20 @@ router.post('/authenticate', async (req, res) => {
    * PT-BR: Desestruturando a requisição e guardando o email e a senha em constantes
    */
   const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email }).select('+password');
 
-  const user = await User.findOne({ email }).select('+password');
+    if (!user) return res.status(400).send({ error: 'Incorrect credentials' });
 
-  if (!user) return res.status(400).send({ error: 'Incorrect credentials' });
+    if (!(await bcrypt.compare(password, user.password)))
+      return res.status(400).send({ error: 'Incorrect credentials' });
 
-  if (!(await bcrypt.compare(password, user.password)))
-    return res.status(400).send({ error: 'Incorrect credentials' });
+    user.password = undefined;
 
-  user.password = undefined;
-
-  res.send({ user, token: generateToken({ id: user.id }) });
+    res.status(200).send({ user, token: generateToken({ id: user.id }) });
+  } catch (error) {
+    res.status(500).send({ error: 'Authentication failed' });
+  }
 });
 
 /* EN: Functions after middleware require authentication
@@ -120,7 +122,7 @@ router.delete('/delete/:id', async (req, res) => {
     }
 
     await User.deleteOne({ _id });
-    return res.status(204).send();
+    res.status(204).send();
   } catch (error) {
     res.status(500).send({ error: 'delete failed' });
   }
@@ -141,13 +143,13 @@ router.put('/update', async (req, res) => {
       updates.password = await bcrypt.hash(req.body.password, 10);
 
     await User.updateOne({ _id }, updates);
-    return res.status(204).send();
+    res.status(204).send();
   } catch (error) {
     res.status(500).send({ error: 'update failed' });
   }
 });
 
-/* EN: Exporting routes in '/user' path
- * PT-BR: Exportando rotas no caminho '/user'
+/* EN: Exporting routes in '/users' path
+ * PT-BR: Exportando rotas no caminho '/users'
  */
-module.exports = (app) => app.use('/user', router);
+module.exports = (app) => app.use('/users', router);

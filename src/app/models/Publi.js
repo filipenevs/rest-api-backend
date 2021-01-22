@@ -16,6 +16,10 @@ const PubliSchema = new mongoose.Schema({
   path: {
     type: String,
     required: true,
+    /* EN: The path is unique, that is, there cannot be similar paths
+     * PT-BR: O caminh (path) é único, ou seja, não podem existir caminhos semelhantes
+     */
+    unique: true,
   },
 
   author: {

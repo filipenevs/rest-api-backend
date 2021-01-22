@@ -51,13 +51,13 @@ module.exports = (req, res, next) => {
     /* EN: In case everything is right, we will pass the user id in the request
      * PT-BR: Caso esteja tudo certo, iremos repassar o id do usuário na requisição
      */
-
     const userQuery = await User.findOne({ _id: decoded.id });
 
     /* EN: Passing the user id and permissions to the request
      * PT-BR: Repassando o id do usuário e suas permissões para a requisição
      */
     req.userId = decoded.id;
+    req.userName = userQuery.name;
     req.userAdm = userQuery.admin;
 
     /* EN: Calling the 'next()' function to proceed with the request

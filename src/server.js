@@ -20,6 +20,7 @@ app.use(cors());
  * PT-BR: Importando controllers
  */
 require('./app/controllers/user')(app);
+require('./app/controllers/publi')(app);
 
 /* EN: Listening server on '.env.PORT', if it does not exist it will use port 3000
  * PT-BR: "Escutando" o servidor na '.env.PORT', caso não exista, usará a porta 3000
