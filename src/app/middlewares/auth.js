@@ -53,6 +53,11 @@ module.exports = (req, res, next) => {
      */
     const userQuery = await User.findOne({ _id: decoded.id });
 
+    /* EN: Will return error if the 'id' present in the token does not exist in the database
+     * PT-BR: Irá retornar erro se o 'id' presente no token não existir no banco de dados
+     */
+    if (!userQuery) return res.status(401).send({ error: 'invalid token' });
+
     /* EN: Passing the user id and permissions to the request
      * PT-BR: Repassando o id do usuário e suas permissões para a requisição
      */

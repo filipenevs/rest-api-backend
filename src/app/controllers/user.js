@@ -23,6 +23,9 @@ const authMiddleware = require('../middlewares/auth');
  * PT-BR: Função que gera um JWT, recebe o id do usuário com parâmetro
  */
 const generateToken = (user) => {
+  /* EN: Token expires in 86400 seconds/1 day
+   * PT-BR: Token expira em 86400 segundos/1 dia
+   */
   return jwt.sign(user, process.env.AUTH_SECRET, {
     expiresIn: 86400,
   });
@@ -84,11 +87,20 @@ router.post('/auth', async (req, res) => {
 
     if (!user) return res.status(400).send({ error: 'Incorrect credentials' });
 
+    /* EN: Comparing passwords with 'bcrypt'
+     * PT-BR: Comparando as senhas com o 'bcrypt'
+     */
     if (!(await bcrypt.compare(password, user.password)))
       return res.status(400).send({ error: 'Incorrect credentials' });
 
+    /* EN: Removing the password of the object that will be returned
+     * PT-BR: Removendo a senha do objeto que será retornado
+     */
     user.password = undefined;
 
+    /* EN: Returning the object with user information (-password) and the generated token
+     * PT-BR: Retornando o objeto com informações do usuário (-senha) e o token gerado
+     */
     res.status(200).send({ user, token: generateToken({ id: user.id }) });
   } catch (error) {
     res.status(500).send({ error: 'Authentication failed' });
@@ -137,18 +149,29 @@ router.delete('/:id', async (req, res) => {
 /* EN: Function to update name or password, the id is received by the request body
  * PT-BR: Função para atualizar o nome e senha, o id é recebido pelo corpo da requisição
  */
-router.put('/', async (req, res) => {
-  const _id = req.userId;
+router.put('/:id', async (req, res) => {
+  const _id = req.params.id;
   try {
-    /* EN: Both data are updated with the same function, it will only be updated if the data is in the request body
-     * PT-BR: Os dois dados são atualizados com a mesma função, só será atualizado se o dado estiver no corpo da requisição
+    /* EN: All data are updated with the same function, it will only be updated if the data is in the request body
+     * PT-BR: Todos os dados são atualizados com a mesma função, só será atualizado se o dado estiver no corpo da requisição
      */
-    const updates = {};
-    if (req.body.name) updates.name = req.body.name;
-    if (req.body.password)
-      updates.password = await bcrypt.hash(req.body.password, 10);
 
-    await User.updateOne({ _id }, updates);
+    if (_id !== req.userId) {
+      const userUpdate = await User.findOne({ _id });
+      /* EN: To modify another user it is necessary to have higher permissions
+       * PT-BR: Para modificar outro usuário, é necessário ter permissões superiores
+       */
+      if (req.userAdm <= userUpdate.admin)
+        return res.status(403).send({ error: 'permission denied' });
+    }
+
+    /* EN: Encrypting the password before updating
+     * PT-BR: Encriptando a senha antes de atualizar
+     */
+    if (req.body.password)
+      req.body.password = await bcrypt.hash(req.body.password, 10);
+
+    await User.updateOne({ _id }, req.body);
     res.status(204).send();
   } catch (error) {
     res.status(500).send({ error: 'update failed' });

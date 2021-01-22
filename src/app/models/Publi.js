@@ -22,9 +22,18 @@ const PubliSchema = new mongoose.Schema({
     unique: true,
   },
 
+  /* EN: 'author' references the user who posted
+   * PT-BR: 'author' referencia o usuário que fez a publicação
+   */
   author: {
-    id: mongoose.Schema.Types.ObjectId,
-    name: String,
+    id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
   },
 
   content: {
